@@ -5,43 +5,52 @@ import "./App.css";
 import useFetchApi from "../../hooks/useFetchApi";
 import TodoForm from "../TodoForm/TodoForm";
 import ResourceLisWithBulkActionsAndManyItemsExample from "../ResourceLisWithBulkActionsAndManyItemsExample/ResourceLisWithBulkActionsAndManyItemsExample";
+import { db } from "../../firebase-config";
+import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 function App() {
-    const {
-        data: fetchedTodos,
-        loading
-    } = useFetchApi("https://jsonplaceholder.typicode.com/todos?_limit=10");
 
     const [todos, setTodos] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (fetchedTodos) {
-            const formattedTodos = fetchedTodos.map(todo => ({
-                ...todo,
-                id: todo.id.toString()
+        const todosCol = collection(db, 'todos');
+        const unsubscribe = onSnapshot(todosCol, (snapshot) => {
+            const todoList = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id
             }));
-            setTodos(formattedTodos);
-        }
-    }, [fetchedTodos]);
-    const addTodo = (text) => {
-        if (text) {
-            setTodos((previousTodos) => [...previousTodos, {id: Date.now().toString(),title: text, completed: false}]);
+            setTodos(todoList);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const addTodo = async (title) => {
+        if (title) {
+            await addDoc(collection(db, "todos"), {
+                title,
+                completed: false
+            });
             setIsFormVisible(false);
         }
     };
 
-    const completeTodo = (id) => {
-        const updatedTodos = todos.map((todo) =>
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
-        );
-        setTodos(updatedTodos);
+    const completeTodo = async (id) => {
+        const todoRef = doc(db, "todos", id);
+        const todoToUpdate = todos.find(todo => todo.id === id);
+        if (todoToUpdate) {
+            await updateDoc(todoRef, {
+                completed: !todoToUpdate.completed
+            });
+        }
     };
 
     // Remove a todo by id
-    const removeTodo = (id) => {
-        const updatedTodos = todos.filter((todo) => todo.id !== id);
-        setTodos(updatedTodos);
+    const removeTodo = async (id) => {
+        await deleteDoc(collection(db, "todos", id));
     };
 
     const handleCreateAction = () => {

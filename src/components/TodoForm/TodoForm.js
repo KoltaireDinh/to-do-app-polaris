@@ -15,7 +15,6 @@ function TodoForm({addTodo}) {
             <InlineStack blockAlign="end" gap="200" wrap={false}>
                 <div style={{ flexGrow: 1 }}>
                     <TextField
-                        label="New Todo"
                         value={text}
                         onChange={setText}
                         placeholder="Enter your todo"

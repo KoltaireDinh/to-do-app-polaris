@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from "react";
-import {AppProvider, Page, Card, BlockStack} from "@shopify/polaris";
+import React, {useEffect, useState} from "react";
+import {AppProvider, BlockStack, Modal, Page} from "@shopify/polaris";
 import enTranslations from '@shopify/polaris/locales/en.json';
 import "./App.css";
 import {db} from "../../firebase-config";
@@ -48,6 +48,9 @@ function App() {
     const handleCreateAction = () => {
         setIsFormVisible(!isFormVisible);
     };
+    const handleCloseModal = () => {
+        setIsFormVisible(false)
+    }
     const primaryAction = {
         content: 'Create', onAction: handleCreateAction
     };
@@ -56,7 +59,16 @@ function App() {
     return (<AppProvider i18n={enTranslations}>
         <Page title="Todos" primaryAction={primaryAction}>
             <BlockStack vertical>
-                {isFormVisible && (<Card><TodoForm addTodo={handleAddTodo}/></Card>)}
+                <Modal
+                    size="small"
+                    open={isFormVisible}
+                    title={"Create Task"}
+                    onClose={handleCloseModal}>
+                    <Modal.Section>
+                        <TodoForm addTodo={handleAddTodo}/>
+
+                    </Modal.Section>
+                </Modal>
                 {loading ? (<div>Loading...</div>) : (<ResourceLisWithBulkActionsAndManyItemsExample
                     todos={todos}
                     completeTodo={handleCompleteTodo}

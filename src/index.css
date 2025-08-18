@@ -1,0 +1,19 @@
+.app {
+    background: #209cee;
+    height: 100vh;
+    padding: 30px;
+}
+
+.todo-list {
+}
+
+.todo {
+    align-items: center;
+    border-radius: 3px;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+    display: flex;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    justify-content: space-between;
+    padding: 3px 10px;
+}

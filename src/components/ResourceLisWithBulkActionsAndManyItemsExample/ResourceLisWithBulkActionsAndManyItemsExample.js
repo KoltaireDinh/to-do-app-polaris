@@ -1,45 +1,36 @@
-import React, {useState} from 'react';
+// src/ResourceListWithBulkActionsAndManyItemsExample.js
+import React, { useState } from 'react';
 import {
     Card, ResourceItem, ResourceList, Text, BlockStack, InlineStack, Button, ButtonGroup, Badge,
 } from '@shopify/polaris';
 
-function ResourceListWithBulkActionsAndManyItemsExample({todos, completeTodo, removeTodo, setTodos}) {
+function ResourceListWithBulkActionsAndManyItemsExample({
+                                                            todos,
+                                                            completeTodo,
+                                                            removeTodo,
+                                                            bulkComplete, // Đây là hàm từ bulkHandlers.js
+                                                            bulkIncomplete, // Đây là hàm từ bulkHandlers.js
+                                                            bulkRemove // Đây là hàm từ bulkHandlers.js
+                                                        }) {
     const [selectedItems, setSelectedItems] = useState([]);
-
-    const handleBulkDelete = () => {
-        const updatedTodos = todos.filter(todo => !selectedItems.includes(todo.id.toString()));
-        setTodos(updatedTodos);
-        setSelectedItems([]);
-    };
-
-    const handleBulkCompleteFilter = () => {
-        const updatedTodos = todos.map(todo => {
-            if (selectedItems.includes(todo.id.toString())) {
-                return {
-                    ...todo, completed: true
-                };
-            }
-            return todo;
-        });
-        setTodos(updatedTodos);
-        setSelectedItems([]);
-    };
-
-    const handleBulkInCompleteFilter = () => {
-        const updatedTodos = todos.map(todo => {
-            if (selectedItems.includes(todo.id.toString())) {
-                return {
-                    ...todo, completed: false
-                };
-            }
-            return todo;
-        });
-        setTodos(updatedTodos);
-        setSelectedItems([]);
-    };
 
     const resourceName = {
         singular: 'todo', plural: 'todos',
+    };
+
+    const handleBulkComplete = async () => {
+        await bulkComplete(selectedItems);
+        setSelectedItems([]);
+    };
+
+    const handleBulkIncomplete = async () => {
+        await bulkIncomplete(selectedItems);
+        setSelectedItems([]);
+    };
+
+    const handleBulkDelete = async () => {
+        await bulkRemove(selectedItems);
+        setSelectedItems([]);
     };
 
     return (<BlockStack gap="400">
@@ -55,15 +46,15 @@ function ResourceListWithBulkActionsAndManyItemsExample({todos, completeTodo, re
         </Card>
         {selectedItems.length > 0 && (<InlineStack align={"center"}>
             <ButtonGroup>
-                <Button onClick={handleBulkCompleteFilter}>Complete</Button>
-                <Button onClick={handleBulkInCompleteFilter}>Incomplete</Button>
-                <Button onClick={handleBulkDelete}>Delete</Button>
+                <Button onClick={() => handleBulkComplete(selectedItems)}>Complete</Button>
+                <Button onClick={() => handleBulkIncomplete(selectedItems)}>Incomplete</Button>
+                <Button onClick={() => handleBulkDelete(selectedItems)}>Delete</Button>
             </ButtonGroup>
         </InlineStack>)}
     </BlockStack>);
 
     function renderItem(todo) {
-        const {id, title, completed} = todo;
+        const { id, title, completed } = todo;
 
         return (<ResourceItem
             id={id}
@@ -85,7 +76,6 @@ function ResourceListWithBulkActionsAndManyItemsExample({todos, completeTodo, re
                             size='large'
                             status={'success'}> Incomplete
                         </Badge>
-
                     )}
                     <ButtonGroup>
                         {!completed && (<Button

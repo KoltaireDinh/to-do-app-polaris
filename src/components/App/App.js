@@ -1,56 +1,48 @@
-import React, {useEffect, useState} from "react";
-import {AppProvider, Page, LegacyStack, Card} from "@shopify/polaris";
+import React, {useState, useEffect} from "react";
+import {AppProvider, Page, Card, BlockStack} from "@shopify/polaris";
 import enTranslations from '@shopify/polaris/locales/en.json';
 import "./App.css";
-import useFetchApi from "../../hooks/useFetchApi";
+import {db} from "../../firebase-config";
+import {collection, onSnapshot} from "firebase/firestore";
+import createBulkHandlers from "../../handlers/bulkHandler";
 import TodoForm from "../TodoForm/TodoForm";
-import ResourceLisWithBulkActionsAndManyItemsExample from "../ResourceLisWithBulkActionsAndManyItemsExample/ResourceLisWithBulkActionsAndManyItemsExample";
-import { db } from "../../firebase-config";
-import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import ResourceLisWithBulkActionsAndManyItemsExample
+    from "../ResourceLisWithBulkActionsAndManyItemsExample/ResourceLisWithBulkActionsAndManyItemsExample";
+import createSingleTaskHandlers from "../../handlers/singleTaskHandler";
 
 function App() {
-
     const [todos, setTodos] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
+
+    const {bulkComplete, bulkIncomplete, bulkRemove} = createBulkHandlers(db);
+    const {singleTaskComplete, singleTaskRemove, singleTaskCreate} = createSingleTaskHandlers(db);
 
     useEffect(() => {
         const todosCol = collection(db, 'todos');
         const unsubscribe = onSnapshot(todosCol, (snapshot) => {
             const todoList = snapshot.docs.map(doc => ({
-                ...doc.data(),
-                id: doc.id
+                ...doc.data(), id: doc.id
             }));
             setTodos(todoList);
             setLoading(false);
         });
-
         return () => unsubscribe();
     }, []);
-
-    const addTodo = async (title) => {
-        if (title) {
-            await addDoc(collection(db, "todos"), {
-                title,
-                completed: false
-            });
-            setIsFormVisible(false);
-        }
+    const handleAddTodo = async (title) => {
+        await singleTaskCreate(title);
+        setIsFormVisible(false);
     };
 
-    const completeTodo = async (id) => {
-        const todoRef = doc(db, "todos", id);
+    const handleCompleteTodo = async (id) => {
         const todoToUpdate = todos.find(todo => todo.id === id);
         if (todoToUpdate) {
-            await updateDoc(todoRef, {
-                completed: !todoToUpdate.completed
-            });
+            await singleTaskComplete(id, todoToUpdate.completed);
         }
     };
 
-    // Remove a todo by id
-    const removeTodo = async (id) => {
-        await deleteDoc(collection(db, "todos", id));
+    const handleRemoveTodo = async (id) => {
+        await singleTaskRemove(id);
     };
 
     const handleCreateAction = () => {
@@ -60,21 +52,21 @@ function App() {
         content: 'Create', onAction: handleCreateAction
     };
 
+
     return (<AppProvider i18n={enTranslations}>
         <Page title="Todos" primaryAction={primaryAction}>
-            <LegacyStack vertical>
-                {isFormVisible && (<Card><TodoForm addTodo={addTodo}/></Card>)}
-
-                {loading ? (<div>Loading...</div>) :
-                    (<ResourceLisWithBulkActionsAndManyItemsExample
-                        setTodos={setTodos}
-                        todos={todos}
-                        completeTodo={completeTodo}
-                        removeTodo={removeTodo}/>
-                    )}
-            </LegacyStack>
+            <BlockStack vertical>
+                {isFormVisible && (<Card><TodoForm addTodo={handleAddTodo}/></Card>)}
+                {loading ? (<div>Loading...</div>) : (<ResourceLisWithBulkActionsAndManyItemsExample
+                    todos={todos}
+                    completeTodo={handleCompleteTodo}
+                    removeTodo={handleRemoveTodo}
+                    bulkComplete={bulkComplete}
+                    bulkIncomplete={bulkIncomplete}
+                    bulkRemove={bulkRemove}
+                />)}
+            </BlockStack>
         </Page>
-
     </AppProvider>);
 }
 

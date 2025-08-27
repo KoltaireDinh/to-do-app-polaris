@@ -7,7 +7,7 @@ import {collection, onSnapshot} from "firebase/firestore";
 import createBulkHandlers from "../../handlers/bulkHandler";
 import TodoForm from "../TodoForm/TodoForm";
 import ResourceLisWithBulkActionsAndManyItemsExample
-    from "../ResourceLisWithBulkActionsAndManyItemsExample/ResourceLisWithBulkActionsAndManyItemsExample";
+    from "../ResourceList/ResourceList";
 import createSingleTaskHandlers from "../../handlers/singleTaskHandler";
 
 function App() {

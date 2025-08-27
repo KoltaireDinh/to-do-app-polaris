@@ -1,33 +1,65 @@
-// src/ResourceListWithBulkActionsAndManyItemsExample.js
 import React, {useState} from 'react';
 import {
-    Card, ResourceItem, ResourceList, Text, BlockStack, InlineStack, Button, ButtonGroup, Badge,
+    Badge,
+    BlockStack,
+    Button,
+    ButtonGroup,
+    Card,
+    InlineStack,
+    ResourceItem,
+    ResourceList,
+    Text,
 } from '@shopify/polaris';
 
 function ResourceListWithBulkActionsAndManyItemsExample({
-                                                            todos, completeTodo, removeTodo, bulkComplete, // Đây là hàm từ bulkHandlers.js
-                                                            bulkIncomplete, // Đây là hàm từ bulkHandlers.js
-                                                            bulkRemove // Đây là hàm từ bulkHandlers.js
+                                                            todos,
+                                                            completeTodo,
+                                                            removeTodo,
+                                                            bulkComplete,
+                                                            bulkIncomplete,
+                                                            bulkRemove
                                                         }) {
     const [selectedItems, setSelectedItems] = useState([]);
-
+    const [bulkLoading, setBulkLoading] = useState(false);
+    const [bulkAction, setBulkAction] = useState(null);
     const resourceName = {
         singular: 'todo', plural: 'todos',
     };
 
     const handleBulkComplete = async () => {
-        await bulkComplete(selectedItems);
-        setSelectedItems([]);
+        setBulkLoading(true);
+        setBulkAction('complete');
+        try {
+            await bulkComplete(selectedItems);
+            setSelectedItems([]);
+
+        } finally {
+            setBulkLoading(false);
+        }
     };
 
     const handleBulkIncomplete = async () => {
-        await bulkIncomplete(selectedItems);
-        setSelectedItems([]);
+        setBulkLoading(true);
+        setBulkAction('incomplete');
+        try {
+            await bulkIncomplete(selectedItems);
+            setSelectedItems([]);
+
+        } finally {
+            setBulkLoading(false);
+        }
     };
 
     const handleBulkDelete = async () => {
-        await bulkRemove(selectedItems);
-        setSelectedItems([]);
+        setBulkLoading(true);
+        setBulkAction('delete');
+        try {
+            await bulkRemove(selectedItems);
+            setSelectedItems([]);
+
+        } finally {
+            setBulkLoading(false);
+        }
     };
 
     return (<BlockStack gap="400">
@@ -46,12 +78,16 @@ function ResourceListWithBulkActionsAndManyItemsExample({
             >
                 <Button
                     size="large"
+                    loading={bulkLoading && bulkAction === 'complete'}
+                    disabled={bulkLoading}
                     onClick={() => handleBulkComplete(selectedItems)}>Complete</Button>
                 <Button
-                    size="large"
+                    size="large" loading={bulkLoading && bulkAction === 'incomplete'}
+                    disabled={bulkLoading}
                     onClick={() => handleBulkIncomplete(selectedItems)}>Incomplete</Button>
                 <Button
-                    size="large"
+                    size="large" loading={bulkLoading && bulkAction === 'delete'}
+                    disabled={bulkLoading}
                     onClick={() => handleBulkDelete(selectedItems)}>Delete</Button>
             </ButtonGroup>
         </InlineStack>)}

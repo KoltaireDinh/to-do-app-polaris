@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {TextField, Button, InlineStack} from '@shopify/polaris';
+import {TextField, Button, InlineStack, BlockStack, Text} from '@shopify/polaris';
 
 function TodoForm({addTodo}) {
     const [text, setText] = useState('');
@@ -12,22 +12,33 @@ function TodoForm({addTodo}) {
     };
 
     return (
-            <InlineStack blockAlign="end" gap="200" wrap={false}>
+            <BlockStack blockAlign="end" gap="200" wrap={false}>
+                <Text as='h1'>
+                    Title
+                </Text>
                 <div style={{ flexGrow: 1 }}>
                     <TextField
+                        title={'Title'}
                         value={text}
                         onChange={setText}
-                        placeholder="Enter your todo"
                         autoComplete='off'
                     />
                 </div>
-                <Button
-                    variant={'primary'}
-                    size={'large'}
-                    onClick={handleSubmit}
+                <InlineStack align={'end'} gap={'200'}>
+                    <Button
+                        size={'large'}
+                        onClick={handleSubmit}
 
-                >Add Todo</Button>
-            </InlineStack>
+                    >Cancel</Button>
+                    <Button
+                        variant={'primary'}
+                        size={'large'}
+                        onClick={handleSubmit}
+
+                    >Add</Button>
+                </InlineStack>
+
+            </BlockStack>
     );
 }
 
